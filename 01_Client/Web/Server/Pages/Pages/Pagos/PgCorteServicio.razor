@@ -1,0 +1,155 @@
+﻿@page "/administrar/cortes"
+@using Infraestructura.Models.Pagos
+@using Microsoft.AspNetCore.Components
+@using Syncfusion.Blazor.Grids
+@using System.Globalization
+@using MudBlazor
+@using Syncfusion.Blazor.Buttons
+@inherits MainBaseComponent
+@layout MainLayout
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject NavigationManager Nav
+@inject NavigationManager NavigationManager
+
+<MudCard>
+    <!-- Panel de formulario -->
+    <MudExpansionPanels MultiExpansion="false">
+        <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
+            <TitleContent>
+                <div class="d-flex mb-5">
+                    <MudButton Variant="Variant.Outlined" Color="@(expande ? Color.Error : Color.Success)" class="ml-auto"
+                               OnClick="@ToggleExpand">
+                        @(expande ? "CERRAR" : "AGREGAR")
+                    </MudButton>
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudCard>
+                    <EditForm Model="@_Corte" OnValidSubmit="OnValidCorte">
+                        <DataAnnotationsValidator />
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudText Typo="Typo.caption" Class="mb-1"><strong></strong></MudText>
+                                    <TAutoComplete TItem="PgClienteDto"
+                                                   Valores="@_clientes"
+                                                   Value="IdpgCliente"
+                                                   Descripcion="Nombre"
+                                                   @bind-DataValue="_Corte.IdpgCliente"
+                                                   PlaceHolder="CLIENTE" />
+                                </MudItem>
+                                <!-- Fecha de Inicio del Corte -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudDatePicker @bind-Date="_Corte.FechaInicioCorte"
+                                                   Label="FECHA INICIO:"
+                                                   Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense"
+                                                   Required="true" />
+                                </MudItem>
+                                <!-- Fecha Fin del Corte (opcional) -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudDatePicker @bind-Date="_Corte.FechaFinCorte"
+                                                   Label="FECHA FIN:"
+                                                   Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense" />
+                                </MudItem>
+                                <!-- Motivo -->
+                                <MudItem xs="12" sm="12" md="4">
+                                    <MudTextField T="string" @bind-Value="_Corte.Motivo"
+                                                  Label="MOTIVO:"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  MaxLength="200"
+                                                  Required="true" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Success" Class="ml-auto">
+                                GUARDAR
+                            </MudButton>
+                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined"
+                                       OnClick="@ResetCorte" Color="Color.Default">
+                                LIMPIAR FORMULARIO
+                            </MudButton>
+                        </MudCardActions>
+                    </EditForm>
+                </MudCard>
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+    <MudDivider />
+    <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Primary">
+        <b>Realizar cortes de servicio</b>
+    </MudText>
+    <MudDivider />
+
+    <MudTable Items="@_cortes" Filterable="true" Sortable="true" Bordered="true" Hover="true" Dense="true"
+              RowsPerPage="25" RowsPerPageOptions="new int[]{10,25,50,100}">
+        <HeaderContent>
+            <MudTh style="width:5%; max-width:60px;">
+                <MudTableSortLabel SortBy="new Func<PgCorteServicioDto, object>(x => x.IdpgCorte)">
+                    COD.
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgCorteServicioDto, object>(x => x.NombreCliente)">
+                    NOMBRE CLIENTE
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgCorteServicioDto, object>(x => x.FechaInicioCorte)">
+                    FECHA INICIO
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgCorteServicioDto, object>(x => x.FechaFinCorte)">
+                    FECHA FIN
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgCorteServicioDto, object>(x => x.Motivo)">
+                    MOTIVO
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>Opciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.IdpgCorte</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.NombreCliente</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">
+                    @(context.FechaInicioCorte.HasValue ? context.FechaInicioCorte.Value.ToString("dd/MM/yyyy") : "-")
+                </MudText>
+            </MudTd>
+            
+            <MudTd>
+                <MudText Typo="Typo.caption">
+                    @(context.FechaFinCorte.HasValue ? context.FechaFinCorte.Value.ToString("dd/MM/yyyy") : "-")
+                </MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.Motivo</MudText>
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="EDITAR REGISTRO" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="@(() => FormEditarCorte(context))"
+                                   Variant="Variant.Outlined" Color="Color.Warning" Size="Size.Small" />
+                </MudTooltip>
+                <MudTooltip Text="ELIMINAR REGISTRO" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => EliminarCorte(context.IdpgCorte))"
+                                   Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudCard>

@@ -1,0 +1,166 @@
+﻿@page "/administrar/clientes"
+@layout PublicLayout
+@attribute [AllowAnonymous]
+@using Aplicacion.DTOs.Pagos
+@using Microsoft.AspNetCore.Components
+@using Syncfusion.Blazor.Grids
+@using System.Globalization
+@using MudBlazor
+@using Syncfusion.Blazor.Buttons
+@inherits MainBaseComponent
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject NavigationManager Nav
+@inject NavigationManager NavigationManager
+
+
+<MudCard>
+    <!-- Panel de Formulario -->
+    <MudExpansionPanels MultiExpansion="false">
+        <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
+            <TitleContent>
+                <div class="d-flex mb-5">
+                    <MudButton Variant="Variant.Outlined" Color="@(expande ? Color.Error : Color.Success)" class="ml-auto"
+                               OnClick="@ToggleExpand">
+                        @(expande ? "CERRAR" : "AGREGAR")
+                    </MudButton>
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudCard>
+                    <EditForm Model="@_Cliente" OnValidSubmit="OnValidCliente">
+                        <DataAnnotationsValidator />
+                        <MudCardContent>
+                            <MudGrid>
+                                <!-- Nombre -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Cliente.Nombre"
+                                                  Label="NOMBRE:" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  Required="true" MaxLength="100" />
+                                </MudItem>
+                                <!-- Teléfono -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Cliente.Telefono"
+                                                  Label="TELÉFONO:" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  Required="true" MaxLength="20" />
+                                </MudItem>
+                                <!-- Dirección -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Cliente.Direccion"
+                                                  Label="DIRECCIÓN:" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  Required="false" MaxLength="200" />
+                                </MudItem>
+                                <!-- Fecha de Inicio -->
+                                           <MudItem xs="12" sm="6" md="4">
+                                <MudDatePicker @bind-Date="_Cliente.FechaInicio"
+                                Label="FECHA INICIO:" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                Required="true" />
+                                </MudItem>
+
+                                <MudItem xs="12" sm="6" md="3">
+                                    <MudSelect Dense="true" T="string" Label="ESTADO SERVICIO:" @bind-Value="_Cliente.EstadoServicio" For="@(() => _Cliente.EstadoServicio)" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                        <MudSelectItem Value="@("Activo")" />
+                                        <MudSelectItem Value="@("Inactivo")" />
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Success" Class="ml-auto">
+                                GUARDAR
+                            </MudButton>
+                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined"
+                                       OnClick="@ResetCliente" Color="Color.Default">
+                                LIMPIAR FORMULARIO
+                            </MudButton>
+                        </MudCardActions>
+                    </EditForm>
+                </MudCard>
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+    <MudDivider />
+    <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Primary">
+        <b>LISTA DE CLIENTES</b>
+    </MudText>
+    <MudDivider />
+
+    <MudTable Items="@_clientes" Filterable="true" Sortable="true" Bordered="true" Hover="true" Dense="true" RowsPerPage="25" RowsPerPageOptions="new int[]{ 10,25,50,100 }">
+        <HeaderContent>
+            <MudTh style="width:5%; max-width:60px;">
+                <MudTableSortLabel SortBy="new Func<PgClienteDto, object>(x => x.IdpgCliente)">
+                    COD.
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgClienteDto, object>(x => x.Nombre)">
+                    NOMBRE
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgClienteDto, object>(x => x.Telefono)">
+                    TELÉFONO
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgClienteDto, object>(x => x.Direccion)">
+                    DIRECCIÓN
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgClienteDto, object>(x => x.FechaInicio)">
+                    FECHA INICIO
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgClienteDto, object>(x => x.EstadoServicio)">
+                    ESTADO
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>Opciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd><MudText Typo="Typo.caption">@context.IdpgCliente</MudText></MudTd>
+            <MudTd><MudText Typo="Typo.caption">@context.Nombre</MudText></MudTd>
+            <MudTd><MudText Typo="Typo.caption">@context.Telefono</MudText></MudTd>
+            <MudTd><MudText Typo="Typo.caption">@context.Direccion</MudText></MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">
+                    @context.FechaInicio?.ToString("dd/MM/yyyy")
+                </MudText>
+            </MudTd>
+            <MudTd><MudText Typo="Typo.caption">@context.EstadoServicio</MudText></MudTd>
+            <MudTd>
+                <MudTooltip Text="EDITAR REGISTRO" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="@(() => FormEditarCliente(context))"
+                                   Variant="Variant.Outlined" Color="Color.Warning" Size="Size.Small" />
+                </MudTooltip>
+       @*          <MudTooltip Text="ELIMINAR REGISTRO" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => EliminarCliente(context.IdpgCliente))"
+                                   Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" />
+                </MudTooltip> *@
+                <MudTooltip Text="IMPRIMIR" Color="Color.Primary" Placement="Placement.Top">
+                    <MudIconButton Color="Color.Primary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Print" Size="Size.Small"
+                                   OnClick="@(() => repjasper(context.IdpgCliente))" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudCard>
+
+@code {
+    public async Task repjasper(int idingreso)
+    {
+        await JSRuntime.InvokeVoidAsync("CargaReportePop",
+        new
+        {
+            ruta = "/Reports/ISPPAGOS/pago_pendiente",
+            idusuario = idingreso // Agregar el parámetro 'area'
+        });
+    }
+
+}

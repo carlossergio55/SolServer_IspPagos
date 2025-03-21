@@ -1,0 +1,252 @@
+﻿@page "/administrar/equipos"
+@using Infraestructura.Models.Pagos;
+@using Microsoft.AspNetCore.Components
+@using Syncfusion.Blazor.Grids
+@using System.Globalization
+@using MudBlazor
+@using Syncfusion.Blazor.Buttons
+@inherits MainBaseComponent
+@layout MainLayout
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject NavigationManager Nav
+@inject NavigationManager NavigationManager
+
+
+<MudCard>
+    <!-- Panel de formulario -->
+    <MudExpansionPanels MultiExpansion="false">
+        <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
+            <TitleContent>
+                <div class="d-flex mb-5">
+                    <MudButton Variant="Variant.Outlined" Color="@(expande ? Color.Error : Color.Success)" class="ml-auto"
+                               OnClick="@ToggleExpand">
+                        @(expande ? "CERRAR" : "AGREGAR")
+                    </MudButton>
+                </div>
+            </TitleContent>
+            <ChildContent>
+                <MudCard>
+                    <EditForm Model="@_Equipo" OnValidSubmit="OnValidEquipo">
+                        <DataAnnotationsValidator />
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudText Typo="Typo.caption" Class="mb-1"><strong></strong></MudText>
+                                    <TAutoComplete TItem="PgClienteDto"
+                                                   Valores="@_clientes"
+                                                   Value="IdpgCliente"
+                                                   Descripcion="Nombre"
+                                                   @bind-DataValue="_Equipo.IdpgCliente"
+                                                   PlaceHolder="CLIENTE" />
+                                </MudItem>
+                                <!-- UsuarioAiros -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.UsuarioAiros"
+                                                  Label="USUARIO AIROS:" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="50" />
+                                </MudItem>
+                                <!-- ContraseñaAiros -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.ContraseñaAiros"
+                                                  Label="CONTRASEÑA AIROS:" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  MaxLength="50" />
+                                </MudItem>
+
+                                <!-- IpAiros -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.IpAiros"
+                                                  Label="IP AIROS:" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="20" />
+                                </MudItem>
+                                <!-- MacAiros -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.MacAiros"
+                                                  Label="MAC AIROS:" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="20" />
+                                </MudItem>
+                                <!-- UsuarioRouter -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.UsuarioRouter"
+                                                  Label="USUARIO ROUTER:" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="50" />
+                                </MudItem>
+                                <!-- ContraseñaRouter -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.ContraseñaRouter"
+                                                  Label="CONTRASEÑA ROUTER:" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  MaxLength="50" />
+                                </MudItem>
+                                <!-- IpRouter -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.IpRouter"
+                                                  Label="IP ROUTER:" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="20" />
+                                </MudItem>
+                                <!-- MacRouter -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.MacRouter"
+                                                  Label="MAC ROUTER:" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="20" />
+                                </MudItem>
+                                <!-- NombreWifi -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.NombreWifi"
+                                                  Label="NOMBRE WIFI:" Variant="Variant.Outlined" Margin="Margin.Dense" MaxLength="50" />
+                                </MudItem>
+                                <!-- ContraseñaWifi -->
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudTextField T="string" @bind-Value="_Equipo.ContraseñaWifi"
+                                                  Label="CONTRASEÑA WIFI:" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                  MaxLength="50" />
+                                </MudItem>                 
+                            </MudGrid>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Success" Class="ml-auto">
+                                GUARDAR
+                            </MudButton>
+                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined"
+                                       OnClick="@ResetEquipo" Color="Color.Default">
+                                LIMPIAR FORMULARIO
+                            </MudButton>
+                        </MudCardActions>
+                    </EditForm>
+                </MudCard>
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+    <MudDivider />
+    <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Primary">
+        <b>LISTA DE EQUIPOS DE CLIENTE</b>
+    </MudText>
+    <MudDivider />
+    <MudTextField @bind-Value="searchClientName"
+                  Placeholder="Buscar por nombre de cliente..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Margin="Margin.Dense"
+                  Class="mb-4" />
+    <MudTable Items="@_equipos" Filterable="true"
+              Filter="@(pago => string.IsNullOrWhiteSpace(searchClientName)
+                           || pago.PgCliente?.Nombre?.ToLower().Contains(searchClientName.ToLower()) == true)"
+              Sortable="true" Bordered="true" Hover="true" Dense="true"
+              RowsPerPage="25" RowsPerPageOptions="new int[]{10,25,50,100}">
+        <HeaderContent>
+            <MudTh style="width:5%; max-width:60px;">
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.IdpgEquipo)">
+                    COD.
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.IdpgCliente)">
+                    ID CLIENTE
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.UsuarioAiros)">
+                    USUARIO AIROS
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.ContraseñaAiros)">
+                    CONTRASEÑA AIROS
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.IpAiros)">
+                    IP AIROS
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.MacAiros)">
+                    MAC AIROS
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.UsuarioRouter)">
+                    USUARIO ROUTER
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.ContraseñaRouter)">
+                    CONTRASEÑA ROUTER
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.IpRouter)">
+                    IP ROUTER
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.MacRouter)">
+                    MAC ROUTER
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.NombreWifi)">
+                    NOMBRE WIFI
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<PgEquipoClienteDto, object>(x => x.ContraseñaWifi)">
+                    CONTRASEÑA WIFI
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                Opciones
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.IdpgEquipo</MudText>
+            </MudTd>
+
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.PgCliente?.Nombre</MudText>
+            </MudTd>
+
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.UsuarioAiros</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.ContraseñaAiros</MudText>
+            </MudTd>
+            <MudTd>
+                <div @onclick="() => OpenIpAiros(context)" style="cursor: pointer;">
+                    <MudText Typo="Typo.caption">@context.IpAiros</MudText>
+                </div>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.MacAiros</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.UsuarioRouter</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.ContraseñaRouter</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.IpRouter</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.MacRouter</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.NombreWifi</MudText>
+            </MudTd>
+            <MudTd>
+                <MudText Typo="Typo.caption">@context.ContraseñaWifi</MudText>
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="EDITAR REGISTRO" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="@(() => FormEditarEquipo(context))"
+                                   Variant="Variant.Outlined" Color="Color.Warning" Size="Size.Small" />
+                </MudTooltip>
+                <MudTooltip Text="ELIMINAR REGISTRO" Placement="Placement.Top">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => EliminarEquipo(context.IdpgEquipo))"
+                                   Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
+</MudCard>

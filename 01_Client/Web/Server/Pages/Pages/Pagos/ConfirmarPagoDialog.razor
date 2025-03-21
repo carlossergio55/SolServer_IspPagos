@@ -1,0 +1,35 @@
+﻿@using MudBlazor
+@namespace Server.Pages.Pages.Pagos
+
+<MudDialog>
+    <TitleContent>Confirmar Pago</TitleContent>
+    <DialogContent>
+        <MudText>¿Está seguro de cambiar el estado a Pagado?</MudText>
+        <MudRadioGroup @bind-SelectedOption="selectedTipoPago" Class="mt-4">
+            <MudRadio Option="@("Efectivo")"/> Efectivo
+            <MudRadio Option="@("Transferencia")"/> Transferencia
+        </MudRadioGroup>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="Confirm">Confirmar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Inject] private ISnackbar _Snackbar { get; set; }
+    private string selectedTipoPago;
+
+    private void Confirm()
+    {
+        if(string.IsNullOrEmpty(selectedTipoPago))
+        {
+            _Snackbar.Add("Seleccione un tipo de pago", Severity.Error);
+            return;
+        }
+        MudDialog.Close(DialogResult.Ok(selectedTipoPago));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
