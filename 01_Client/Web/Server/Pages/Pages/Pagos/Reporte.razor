@@ -1,0 +1,84 @@
+﻿@page "/reportes"
+@using Infraestructura.Models.Pagos;
+@using Microsoft.AspNetCore.Components
+@using Syncfusion.Blazor.Grids
+@using System.Globalization
+@using MudBlazor
+@using Syncfusion.Blazor.Buttons
+@inherits MainBaseComponent
+@layout MainLayout
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject ISnackbar _Snackbar
+
+
+<MudContainer Class="py-8">
+    <MudText Typo="Typo.h4" Class="mb-6 d-flex align-center">
+        <MudIcon Icon="@Icons.Filled.Assessment" Class="mr-3" />
+        Centro de Reportes
+    </MudText>
+
+    <!-- Grupo de Reportes Principales -->
+    <MudGrid Spacing="3" Justify="Justify.Center">
+        <MudItem xs="12" sm="6" md="4" Class="mb-4">
+            <MudCard Hover="true" Class="h-100">
+                <MudCardContent>
+                    <div class="d-flex flex-column align-center">
+                        <MudIcon Icon="@Icons.Filled.RequestPage"
+                                 Size="Size.Large"
+                                 Color="Color.Info"
+                                 Class="mb-3" />
+                        <MudText Typo="Typo.h6" Class="text-center mb-2">
+                            Pendientes de Cobro
+                        </MudText>
+                        <MudText Typo="Typo.body2"
+                                 Color="Color.Secondary"
+                                 Class="text-center mb-4">
+                            Listado de clientes con pagos pendientes
+                        </MudText>
+                        <MudButton Variant="Variant.Filled"
+                                   FullWidth="true"
+                                   Color="Color.Info"
+                                   EndIcon="@Icons.Filled.Visibility"
+                                   OnClick="() => MostrarPendientes()">
+                            Ver Detalles
+                        </MudButton>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+      
+    </MudGrid>
+
+    
+</MudContainer>
+
+@code {
+    private DateTime? _fechaInicio = DateTime.Today.AddMonths(-1);
+    private DateTime? _fechaFin = DateTime.Today;
+
+    public async Task MostrarPendientes()
+    {
+        await JSRuntime.InvokeVoidAsync("CargaReportePdf",
+        new
+        {
+            ruta = "/Reports/ISPPAGOS/pago_todos_clientes"
+            
+        });
+    }
+}
+
+<style>
+    .mud-card {
+        transition: transform 0.2s;
+    }
+
+        .mud-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .mud-button {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+</style>
