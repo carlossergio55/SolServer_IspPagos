@@ -1,0 +1,162 @@
+﻿@page "/consulta"
+@layout PublicLayout
+@attribute [AllowAnonymous]
+@using Aplicacion.DTOs.Pagos
+@using Microsoft.AspNetCore.Components
+@using MudBlazor
+@using System.Text.RegularExpressions
+@inherits MainBaseComponent
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<MudContainer Class="mt-8" MaxWidth="MaxWidth.Medium">
+    <MudCard>
+        <MudCardContent>
+            <!-- Formulario de consulta -->
+            <MudGrid Justify="Justify.Center" Spacing="3">
+                <MudItem xs="12" Class="text-center mb-4">
+                    <MudText Typo="Typo.h5" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Custom.Brands.Calculator" Class="mr-2" />
+                        Consulta de Pagos
+                    </MudText>
+                </MudItem>
+
+                <MudItem xs="12" md="8">
+                    <MudTextField @bind-Value="_numeroCelular"
+                                  Label="Número de Celular"
+                                  Placeholder="Ej: 67627325"
+                                  Variant="Variant.Outlined"
+                                  Immediate="true"
+                                  Required="true"
+                                  AdornmentIcon="@Icons.Filled.Phone"
+                                  Adornment="Adornment.Start"
+                                  Validation="@(new Regex("^\\d{8}$"))"
+                                  ValidationError="Ingrese los 8 dígitos de su número celular (sin 591)" />
+                </MudItem>
+
+                <MudItem xs="12" md="4" Class="d-flex align-center">
+                    <MudButton FullWidth="true"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               EndIcon="@Icons.Filled.Search"
+                               Disabled="@(!_formValido)"
+                               OnClick="ConsultarCliente">
+                        Consultar
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Resultados -->
+            @if (_clienteEncontrado != null)
+            {
+                <MudDivider Class="my-4" />
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudGrid Spacing="3">
+                        <!-- Datos básicos del cliente -->
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Class="mb-2">Cliente: @_clienteEncontrado.Nombre</MudText>
+                            <MudText Typo="Typo.body2">Teléfono: @_clienteEncontrado.Telefono</MudText>
+                            <MudText Typo="Typo.body2">
+                                Estado:
+                                <MudChip Color="@(_clienteEncontrado.EstadoServicio == "Activo" ? Color.Success : Color.Error)"
+                                         Size="Size.Small">
+                                    @_clienteEncontrado.EstadoServicio
+                                </MudChip>
+                            </MudText>
+                        </MudItem>
+
+                        <!-- Botón de reporte -->
+                        <MudItem xs="12" Class="mt-4 text-center">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Filled.Print"
+                                       OnClick="@(() => GenerarReporte(_clienteEncontrado.IdpgCliente))">
+                                Generar Reporte
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            }
+
+            <!-- Mensajes de estado -->
+            @if (_mostrarMensaje)
+            {
+                <MudAlert Class="mt-4"
+                          Severity="@_tipoMensaje"
+                          Variant="Variant.Filled"
+                          Dismissable="true"
+                          OnClose="@(() => _mostrarMensaje = false)">
+                    @_mensaje
+                </MudAlert>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private string _numeroCelular;
+    private PgClienteDto _clienteEncontrado;
+    private bool _mostrarMensaje;
+    private string _mensaje;
+    private Severity _tipoMensaje;
+    private bool _formValido => !string.IsNullOrWhiteSpace(_numeroCelular) &&
+                              new Regex("^\\d{8}$").IsMatch(_numeroCelular.Trim().Replace(" ", ""));
+
+    private async Task ConsultarCliente()
+    {
+        try
+        {
+            // Limpiar y formatear el número
+            var numeroLimpio = _numeroCelular.Trim().Replace(" ", "");
+
+            // Validación adicional
+            if (numeroLimpio.Length != 8)
+            {
+                MostrarMensaje("El número debe tener 8 dígitos", Severity.Warning);
+                return;
+            }
+
+            var numeroBusqueda = $"591{numeroLimpio}";
+
+            var headers = new Dictionary<string, string> { { "Accept", "application/json" } };
+
+            var result = await _Rest.GetAsync<List<PgClienteDto>>(
+                $"https://myapi.envibol.site/api/PgCliente?telefono={numeroBusqueda}",
+                headers,
+                isFullUrl: true
+            );
+
+            if (result.State == State.Success && result.Data?.Count > 0)
+            {
+                _clienteEncontrado = result.Data.First();
+                _mostrarMensaje = false;
+                StateHasChanged();
+            }
+            else
+            {
+                MostrarMensaje("No se encontró ningún cliente con ese número", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            MostrarMensaje($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GenerarReporte(int idCliente)
+    {
+        await JSRuntime.InvokeVoidAsync("CargaReportePop", new
+        {
+            ruta = "/Reports/ISPPAGOS/pago_pendiente",
+            idusuario = idCliente
+        });
+    }
+
+    private void MostrarMensaje(string mensaje, Severity tipo)
+    {
+        _mensaje = mensaje;
+        _tipoMensaje = tipo;
+        _mostrarMensaje = true;
+        StateHasChanged();
+    }
+}

@@ -2,6 +2,7 @@
 using Infraestructura.Abstract;
 using Infraestructura.Models.Authentication;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -88,6 +89,36 @@ namespace Infraestructura.Services
                 var errorres = await result.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<ResponseEntity<T>>(errorres);
             }
+        }
+        // Nuevo método sobrecargado con headers
+        public async Task<ResponseEntity<T>> GetAsync<T>(string url, Dictionary<string, string> headers, bool isFullUrl = false)
+        {
+            var cliente = await GetCliente();
+
+            // Limpiar y agregar headers
+            cliente.DefaultRequestHeaders.Clear();
+            foreach (var header in headers)
+            {
+                cliente.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
+
+            // Manejar URLs absolutas
+            var finalUrl = isFullUrl ? url : $"{cliente.BaseAddress}{url}";
+
+            var response = await cliente.GetAsync(finalUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                var data = await JsonSerializer.DeserializeAsync<ResponseEntity<T>>(
+                    responseStream,
+                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+                data.State = data.Succeeded ? State.Success : State.Warning;
+                return data;
+            }
+
+            var errorres = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<ResponseEntity<T>>(errorres);
         }
         public async Task<ResponseEntity<T>> GetAsync<T>(string pControlador)
         {
