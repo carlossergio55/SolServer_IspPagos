@@ -23,7 +23,7 @@ namespace Dominio.Entities.Pagos
         public decimal Monto { get; set; }
         public string EstadoPago { get; set; } = "Pendiente";
         public string Tipopago { get; set; }
-
+        public bool Recibido { get; set; }
         public virtual PgCliente PgCliente { get; set; }
     }
 

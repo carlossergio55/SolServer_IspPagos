@@ -1,7 +1,9 @@
 function CargaReportePdf (objParam) {
     var urlConfig = "_flowId=viewReportFlow&standAlone=true&decorate=no&";
      var urlHost = document.getElementById("rptUrlDes").value;
-    var urlRender = "&j_username=envibol&j_password=123456789 &output=pdf";
+    var urlRender = "&j_username=" + encodeURIComponent("envibol")
+        + "&j_password=" + encodeURIComponent("123456789")
+        + "&output=pdf";
      urlReport = objParam.ruta;
     urlReport = "reportUnit=" + urlReport.replace(/['/']/gi, '%2F');
 

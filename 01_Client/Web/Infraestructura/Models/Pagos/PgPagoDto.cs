@@ -15,7 +15,7 @@ namespace Infraestructura.Models.Pagos
         public decimal Monto { get; set; }
         public string EstadoPago { get; set; }
         public string Tipopago { get; set; }
-
+        public bool Recibido { get; set; }
         public PgClienteDto PgCliente { get; set; }
     }
 }

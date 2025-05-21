@@ -19,6 +19,7 @@ namespace Aplicacion.Features.Pagos.Commands
         public DateTime? FechaPago { get; set; }
         public decimal Monto { get; set; }
         public string Tipopago { get; set; }
+        public bool Recibido { get; set; }
         public string EstadoPago { get; set; }
 
         public class Handler : IRequestHandler<UpdatePgPagoCommand, Response<int>>
@@ -41,6 +42,7 @@ namespace Aplicacion.Features.Pagos.Commands
                 entity.FechaPago = request.FechaPago;
                 entity.Monto = request.Monto;
                 entity.Tipopago = request.Tipopago;
+                entity.Recibido = request.Recibido;
                 entity.EstadoPago = request.EstadoPago;
 
                 await _repositoryAsync.UpdateAsync(entity);

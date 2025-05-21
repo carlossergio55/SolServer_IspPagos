@@ -14,7 +14,7 @@ namespace Aplicacion.DTOs.Pagos
         public DateTime? FechaPago { get; set; }
         public decimal Monto { get; set; }
         public string EstadoPago { get; set; }
-
+        public bool Recibido { get; set; }
         public string Tipopago { get; set; }
 
         public PgClienteDto PgCliente { get; set; }
