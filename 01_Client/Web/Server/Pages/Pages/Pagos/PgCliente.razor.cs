@@ -7,6 +7,7 @@ using Infraestructura.Models.Pagos;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using System;
+using System.Linq;
 namespace Server.Pages.Pages.Pagos
 {
     public partial class PgCliente
@@ -26,7 +27,7 @@ namespace Server.Pages.Pages.Pagos
             var result = await _Rest.GetAsync<List<PgClienteDto>>("PgCliente/GetAll");
             if (result.State == State.Success)
             {
-                _clientes = result.Data;
+                _clientes = result.Data.OrderByDescending(c => c.IdpgCliente).ToList();
                 return;
             }
             else
@@ -34,6 +35,7 @@ namespace Server.Pages.Pages.Pagos
                 _MessageShow("Ocurrió un error: " + result.Message, State.Warning);
             }
         }
+
 
         // Guardar un nuevo cliente
         protected async Task SaveCliente(PgClienteDto cliente)
