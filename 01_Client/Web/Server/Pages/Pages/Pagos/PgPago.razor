@@ -12,85 +12,13 @@
 @inject ISnackbar _Snackbar
 
 
-<MudCard>
-    <!-- Panel de formulario -->
-    <MudExpansionPanels MultiExpansion="false">
-        <MudExpansionPanel @bind-IsExpanded="expande" HideIcon="true">
-            <TitleContent>
-                <div class="d-flex mb-5">
-                    <MudButton Variant="Variant.Outlined" Color="@(expande ? Color.Error : Color.Success)" class="ml-auto"
-                               OnClick="@ToggleExpand">
-                        @(expande ? "CERRAR" : "AGREGAR")
-                    </MudButton>
-                </div>
-            </TitleContent>
-            <ChildContent>
-                <MudCard>
-                    <EditForm Model="@_Pago" OnValidSubmit="OnValidPago">
-                        <DataAnnotationsValidator />
-                        <MudCardContent>
-                            <MudGrid>
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudText Typo="Typo.caption" Class="mb-1"><strong></strong></MudText>
-                                    <TAutoComplete TItem="PgClienteDto"
-                                                   Valores="@_clientes"
-                                                   Value="IdpgCliente"
-                                                   Descripcion="Nombre"
-                                                   @bind-DataValue="_Pago.IdpgCliente"
-                                                   PlaceHolder="CLIENTE" />
-                                </MudItem>
-                                <!-- ID Cliente -->
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudNumericField T="int" @bind-Value="_Pago.IdpgCliente"
-                                                     Label="ID CLIENTE:" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" />
-                                </MudItem>
-                                <!-- MesPago -->
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudDatePicker @bind-Date="_Pago.MesPago"
-                                                   Label="MES PAGO:" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" />
-                                </MudItem>
-                                <!-- FechaPago (opcional) -->
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudDatePicker @bind-Date="_Pago.FechaPago"
-                                                   Label="FECHA PAGO:" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                                </MudItem>
-                                <!-- Monto -->
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudNumericField T="decimal" @bind-Value="_Pago.Monto"
-                                                     Label="MONTO:" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" />
-                                </MudItem>
 
-                                <MudItem xs="12" sm="6" md="3">
-                                    <MudSelect Dense="true" T="string" Label="ESTADO PAGO:" @bind-Value="_Pago.EstadoPago" For="@(() => _Pago.EstadoPago)" Variant="Variant.Outlined" Margin="Margin.Dense">
-                                        <MudSelectItem Value="@("Pagado")" />
-                                        <MudSelectItem Value="@("Pendiente")" />
-                                    </MudSelect>
-                                </MudItem>
-                                <!-- EstadoPago -->
-                                <MudItem xs="12" sm="6" md="4">
-                                    <MudTextField T="string" @bind-Value="_Pago.EstadoPago"
-                                                  Label="ESTADO PAGO:" Variant="Variant.Outlined" Margin="Margin.Dense" Required="true" MaxLength="50" />
-                                </MudItem>
-                            </MudGrid>
-                        </MudCardContent>
-                        <MudCardActions>
-                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Success" Class="ml-auto">
-                                GUARDAR
-                            </MudButton>
-                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined"
-                                       OnClick="@ResetPago" Color="Color.Default">
-                                LIMPIAR FORMULARIO
-                            </MudButton>
-                        </MudCardActions>
-                    </EditForm>
-                </MudCard>
-            </ChildContent>
-        </MudExpansionPanel>
-    </MudExpansionPanels>
-
+<MudTabs Elevation="2" Rounded="true" Centered="true" Class="my-6" Color="Color.Dark">
+    <MudTabPanel Icon="@Icons.Material.Filled.PendingActions" Text="Pendientes">
+    <MudCard>
     <MudDivider />
     <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Primary">
-        <b>LISTA DE PAGOS</b>
+        <b>LISTA DE PAGOS PENDIENTES</b>
     </MudText>
     <MudDivider />
     <MudTextField @bind-Value="searchClientName"
@@ -136,11 +64,6 @@
                     ESTADO
                 </MudTableSortLabel>
             </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<PgPagoDto, object>(x => x.Tipopago)">
-                    TIPO PAGO
-                </MudTableSortLabel>
-            </MudTh>
             <MudTh>Opciones</MudTh>
         </HeaderContent>
         <RowTemplate>
@@ -160,8 +83,7 @@
                 </MudText>
             </MudTd>
             <MudTd><MudText Typo="Typo.caption">@context.Monto</MudText></MudTd>
-            <MudTd><MudText Typo="Typo.caption">@context.EstadoPago</MudText></MudTd>
-            <MudTd><MudText Typo="Typo.caption">@context.Tipopago</MudText></MudTd>
+            <MudTd><MudText Typo="Typo.caption">@context.EstadoPago</MudText></MudTd>           
             <MudTd>
                 @if (context.EstadoPago == "Pendiente")
                 {
@@ -188,7 +110,87 @@
         </PagerContent>
     </MudTable>
 </MudCard>
+</MudTabPanel>
 
+<MudTabPanel Icon="@Icons.Material.Filled.CheckCircle" Text="Pagados">
+    <MudCard>
+        <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Success">
+            <b>LISTA DE PAGOS REALIZADOS</b>
+        </MudText>
+            <MudDivider />
+            <MudTextField @bind-Value="searchClientpago"
+                          Placeholder="Buscar por nombre de cliente..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Margin="Margin.Dense"
+                          Class="mb-4" />
+            <MudTable Items="@_pagado" Filterable="true"
+                      Filter="@(pago => string.IsNullOrWhiteSpace(searchClientpago)
+                                                                       || pago.PgCliente?.Nombre?.ToLower().Contains(searchClientpago.ToLower()) == true)"
+                      Sortable="true" Bordered="true" Hover="true" Dense="true"
+                      RowsPerPage="25" RowsPerPageOptions="new int[]{10,25,50,100}">
+                <HeaderContent>
+                    <MudTh style="width:5%; max-width:60px;">
+                        <MudTableSortLabel SortBy="new Func<PgPagoDto, object>(x => x.IdpgPago)">
+                            COD.
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<PgPagoDto, object>(x => x.PgCliente.Nombre)">
+                            NOMBRE CLIENTE
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<PgPagoDto, object>(x => x.MesPago)">
+                            MES PAGO
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<PgPagoDto, object>(x => x.FechaPago)">
+                            FECHA PAGO
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<PgPagoDto, object>(x => x.Monto)">
+                            MONTO
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="new Func<PgPagoDto, object>(x => x.EstadoPago)">
+                            ESTADO
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>Opciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd><MudText Typo="Typo.caption">@context.IdpgPago</MudText></MudTd>
+                    <MudTd><MudText Typo="Typo.caption">@context.PgCliente?.Nombre</MudText></MudTd>
+                    <MudTd>
+                        <MudText Typo="Typo.caption">
+                            @(context.MesPago.HasValue
+                                                        ? context.MesPago.Value.ToString("dd/MM/yyyy - MMMM", new System.Globalization.CultureInfo("es-ES"))
+                                                        : "-")
+                        </MudText>
+                    </MudTd>
+
+                    <MudTd>
+                        <MudText Typo="Typo.caption">
+                            @(context.FechaPago.HasValue? context.FechaPago.Value.ToString("dd/MM/yyyy") : "-")
+                        </MudText>
+                    </MudTd>
+                    <MudTd><MudText Typo="Typo.caption">@context.Monto</MudText></MudTd>
+                    <MudTd><MudText Typo="Typo.caption">@context.EstadoPago</MudText></MudTd>
+                    <MudTd><MudText Typo="Typo.caption">@context.Tipopago</MudText></MudTd>
+                    
+
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+    </MudCard>
+</MudTabPanel>
+</MudTabs>
 @code {
    
 

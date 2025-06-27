@@ -22,6 +22,7 @@ namespace Server.Pages.Pages.Pagos
         public PgPagoDto _Pago = new PgPagoDto();
         public List<PgClienteDto> _clientes = new List<PgClienteDto>();
         private string searchClientName = string.Empty;
+        private string searchClientpago = string.Empty;
 
         // Obtener la lista de clientes
         protected async Task GetClientes()
@@ -39,6 +40,7 @@ namespace Server.Pages.Pages.Pagos
         }
         // Lista de pagos
         public List<PgPagoDto> _pagos = new List<PgPagoDto>();
+        public List<PgPagoDto> _pagado = new List<PgPagoDto>();
 
         // Obtener la lista de pagos
         protected async Task GetPagos()
@@ -49,6 +51,23 @@ namespace Server.Pages.Pages.Pagos
                 // Filtrar por EstadoPago igual a "Pendiente" y ordenar por IdpgPago en orden descendente
                 _pagos = result.Data
                     .Where(p => p.EstadoPago == "Pendiente")
+                    .OrderByDescending(p => p.IdpgPago)
+                    .ToList();
+                return;
+            }
+            else
+            {
+                _MessageShow("Ocurrió un error: " + result.Message, State.Warning);
+            }
+        }
+        protected async Task GetPago()
+        {
+            var result = await _Rest.GetAsync<List<PgPagoDto>>("PgPago/GetAll");
+            if (result.State == State.Success)
+            {
+                // Filtrar por EstadoPago igual a "Pendiente" y ordenar por IdpgPago en orden descendente
+                _pagado = result.Data
+                    .Where(p => p.EstadoPago == "Pagado")
                     .OrderByDescending(p => p.IdpgPago)
                     .ToList();
                 return;
@@ -164,7 +183,7 @@ namespace Server.Pages.Pages.Pagos
         protected void FormEditarPago(PgPagoDto pago)
         {
             _Pago = pago;
-            ToggleExpand();
+            ToggleExpand(); 
         }
 
         // Reiniciar el formulario
@@ -177,6 +196,7 @@ namespace Server.Pages.Pages.Pagos
         {
             await GetPagos();
             await GetClientes();
+            await GetPago();
         }
 
     }
